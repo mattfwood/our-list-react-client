@@ -1,15 +1,20 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import { Form, Icon, Input, Button, Checkbox } from 'antd';
+import api from '../api/api';
+
 const FormItem = Form.Item;
 
 class UnwrappedLoginForm extends Component {
-  handleSubmit = e => {
+  handleSubmit = (e) => {
     e.preventDefault();
-    this.props.form.validateFields((err, values) => {
+    this.props.form.validateFields(async (err, values) => {
       if (!err) {
-        console.log('Received values of form: ', values);
+        const { email, password } = values;
 
+        const res = await api.login(email, password);
+
+        this.props.setUser(res.data.user);
       }
     });
   };

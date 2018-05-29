@@ -8,22 +8,25 @@ import axios from 'axios';
  */
 
 const instance = axios.create({
-  baseURL: 'http://127.0.0.1:3333/',
+  baseURL: 'http://127.0.0.1:3333',
   timeout: 10000,
   headers: {
-    'X-Key-Inflection': 'camel',
     'Content-Type': 'application/json',
   },
   transformRequest: [
     (data, headers) => {
-      // check if stored headers exist
-      const storedHeaders = JSON.parse(
+      // check if JWT exists
+      const jwt = JSON.parse(
         window.localStorage.getItem('ourListAuthHeaders')
       );
 
-      // if they do, add them to the headers
-      if (storedHeaders) {
-        Object.assign(headers, storedHeaders);
+      console.log(jwt);
+
+      // if it does, add to the headers
+      if (jwt) {
+        Object.assign(headers, {
+          'Authorization': `Bearer ${jwt}`
+        });
       }
 
       // return the data normally

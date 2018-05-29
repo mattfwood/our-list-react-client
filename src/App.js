@@ -1,25 +1,72 @@
 import React, { Component } from 'react';
-import { Layout, Row, Col, Menu, Breadcrumb, Button, Modal } from 'antd';
+import { Layout, Row, Col, Button, Modal } from 'antd';
 import styled from 'styled-components';
 
 import './App.css';
+import api from './api/api';
+import If from './components/utils/If';
 import LoginForm from './components/LoginForm';
+import ListSection from './components/ListSection';
 
 const { Header, Content, Footer } = Layout;
 
 class App extends Component {
   state = {
     user: {},
-    token: '',
     loginModalVisible: false,
+    lists: [],
+  };
+
+  componentDidMount = async () => {
+    try {
+      // check if the user has already logged in
+      const token = window.localStorage.getItem('ourListAuthHeaders');
+
+      // if they have, fetch their data and set the user
+      if (token) {
+        const { data } = await api.me();
+        this.setState({ user: data });
+      }
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   toggleLoginModal = () => {
     this.setState({ loginModalVisible: !this.state.loginModalVisible });
   };
 
+  setUser = async user => {
+    this.setState({
+      user,
+      loginModalVisible: false,
+    });
+
+    // fetch lists
+    try {
+      const { data } = await api.lists();
+      console.log(data);
+      this.setState({ lists: data });
+    } catch (error) {
+      console.error(error);
+      throw new Error(error);
+    }
+  };
+
+  createList = async title => {
+    console.log(title);
+    try {
+      const { data } = await api.createList(title);
+      console.log(data);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   render() {
+    const { user } = this.state;
     const { className } = this.props;
+    const userActive = Object.keys(user).length > 0;
     return (
       <Layout className={`${className} layout`}>
         <Header>
@@ -28,9 +75,11 @@ class App extends Component {
               <h3 className="logo">Our List</h3>
             </Col>
             <Col>
-              <Button type="primary" onClick={this.toggleLoginModal}>
-                Log In
-              </Button>
+              <If condition={!userActive}>
+                <Button type="primary" onClick={this.toggleLoginModal}>
+                  Log In
+                </Button>
+              </If>
             </Col>
           </Row>
         </Header>
@@ -38,17 +87,23 @@ class App extends Component {
           title="Log In"
           visible={this.state.loginModalVisible}
           onCancel={this.toggleLoginModal}
+          footer={null}
         >
           <Row type="flex" justify="center">
             <Col>
-              <LoginForm />
+              <LoginForm setUser={this.setUser} />
             </Col>
           </Row>
         </Modal>
         <Content style={{ padding: '0 50px' }}>
-          <div style={{ background: '#fff', padding: 24, minHeight: 280 }}>
-            Content
-          </div>
+          <If condition={userActive}>
+            <ListSection createList={this.createList} />
+          </If>
+          <If condition={!userActive}>
+            <div style={{ background: '#fff', padding: 24, minHeight: 280 }}>
+              <h2>Log In or Sign Up To Get Started</h2>
+            </div>
+          </If>
         </Content>
         <Footer style={{ textAlign: 'center' }}>Our List</Footer>
       </Layout>
