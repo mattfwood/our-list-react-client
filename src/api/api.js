@@ -55,6 +55,17 @@ const api = {
       console.error(error);
     }
   },
+
+  async createTask(name, list_id) {
+    try {
+      return await instance.post('/tasks/new', {
+        list_id,
+        name
+      })
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
 };
 
 export default api;

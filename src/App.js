@@ -107,7 +107,7 @@ class App extends Component {
             <Row gutter={16}>
               {lists.map(list => (
                 <Col key={list.id} xs={12} md={8} bordered={false}>
-                  <List list={list} />
+                  <List list={list} getLists={this.getLists} />
                 </Col>
               ))}
             </Row>
