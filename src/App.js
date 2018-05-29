@@ -6,7 +6,8 @@ import './App.css';
 import api from './api/api';
 import If from './components/utils/If';
 import LoginForm from './components/LoginForm';
-import ListSection from './components/ListSection';
+import NewListCard from './components/NewListCard';
+import List from './components/list/List';
 
 const { Header, Content, Footer } = Layout;
 
@@ -26,6 +27,7 @@ class App extends Component {
       if (token) {
         const { data } = await api.me();
         this.setState({ user: data });
+        this.getLists();
       }
     } catch (error) {
       console.error(error);
@@ -42,7 +44,10 @@ class App extends Component {
       loginModalVisible: false,
     });
 
-    // fetch lists
+    this.getLists();
+  };
+
+  getLists = async () => {
     try {
       const { data } = await api.lists();
       console.log(data);
@@ -57,14 +62,15 @@ class App extends Component {
     console.log(title);
     try {
       const { data } = await api.createList(title);
-      console.log(data);
+      // get update lists
+      this.getLists();
     } catch (error) {
       console.error(error);
     }
-  }
+  };
 
   render() {
-    const { user } = this.state;
+    const { user, lists } = this.state;
     const { className } = this.props;
     const userActive = Object.keys(user).length > 0;
     return (
@@ -95,9 +101,16 @@ class App extends Component {
             </Col>
           </Row>
         </Modal>
-        <Content style={{ padding: '0 50px' }}>
+        <Content>
           <If condition={userActive}>
-            <ListSection createList={this.createList} />
+            <NewListCard createList={this.createList} />
+            <Row gutter={16}>
+              {lists.map(list => (
+                <Col key={list.id} xs={12} md={8} bordered={false}>
+                  <List list={list} />
+                </Col>
+              ))}
+            </Row>
           </If>
           <If condition={!userActive}>
             <div style={{ background: '#fff', padding: 24, minHeight: 280 }}>
