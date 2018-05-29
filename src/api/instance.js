@@ -23,8 +23,6 @@ const instance = axios.create({
       // check if JWT exists
       const jwt = JSON.parse(window.localStorage.getItem('ourListAuthHeaders'));
 
-      console.log(jwt);
-
       // if it does, add to the headers
       if (jwt) {
         Object.assign(headers, {
