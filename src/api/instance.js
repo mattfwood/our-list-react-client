@@ -7,8 +7,13 @@ import axios from 'axios';
  * appends them to all requests automatically
  */
 
+const URL =
+  process.env.NODE_ENV === 'production'
+    ? 'https://our-list-adonis.herokuapp.com/'
+    : 'http://127.0.0.1:3333';
+
 const instance = axios.create({
-  baseURL: 'http://127.0.0.1:3333',
+  baseURL: URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -16,16 +21,14 @@ const instance = axios.create({
   transformRequest: [
     (data, headers) => {
       // check if JWT exists
-      const jwt = JSON.parse(
-        window.localStorage.getItem('ourListAuthHeaders')
-      );
+      const jwt = JSON.parse(window.localStorage.getItem('ourListAuthHeaders'));
 
       console.log(jwt);
 
       // if it does, add to the headers
       if (jwt) {
         Object.assign(headers, {
-          'Authorization': `Bearer ${jwt}`
+          Authorization: `Bearer ${jwt}`,
         });
       }
 
