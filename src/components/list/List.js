@@ -1,8 +1,12 @@
-//@ts-check
-
 import React, { Component, Fragment } from 'react';
 import { Col, Input, Card, Icon, Modal } from 'antd';
-import { Button, Checkbox, List as ListItem, TextareaItem } from 'antd-mobile';
+import {
+  Button,
+  Checkbox,
+  List as ListComponent,
+  TextareaItem,
+  InputItem
+} from 'antd-mobile';
 import styled from 'styled-components';
 
 import api from '../../api/api';
@@ -55,9 +59,7 @@ class List extends Component {
     const { list, className } = this.props;
 
     const completedTasks = list.tasks.filter(task => task.completed === 1);
-    const incompletedTasks = list.tasks.filter(
-      task => task.completed === 0
-    );
+    const incompletedTasks = list.tasks.filter(task => task.completed === 0);
     return (
       <div className={className}>
         <Card
@@ -67,12 +69,13 @@ class List extends Component {
           {list.tasks.map(task => <div>{task.name}</div>)}
         </Card>
         <Modal
-          title={list.title}
+          // title={list.title}
           visible={this.state.active}
           onCancel={this.toggleActive}
           footer={null}
         >
-          <ListItem>
+          <h2>{list.title}</h2>
+          <ListComponent>
             {incompletedTasks.map(task => (
               <CheckboxItem
                 key={task.id}
@@ -89,18 +92,22 @@ class List extends Component {
                 {task.name}
               </CheckboxItem>
             ))}
-            <ListItem.Item>
-              <TextareaItem
+          </ListComponent>
+          <ListComponent>
+            <ListComponent.Item>
+              <InputItem
                 value={this.state.newTask}
                 placeholder="New Task Name"
                 onChange={value => this.handleTextChange(value)}
                 onKeyUp={this.handleKeyUp}
               />
+            </ListComponent.Item>
+            <ListComponent.Item>
               <Button type="primary" onClick={this.addTask}>
                 Add Task
               </Button>
-            </ListItem.Item>
-          </ListItem>
+            </ListComponent.Item>
+          </ListComponent>
         </Modal>
       </div>
     );
