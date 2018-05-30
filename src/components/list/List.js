@@ -1,11 +1,12 @@
 import React, { Component, Fragment } from 'react';
 import { Col, Input, Card, Icon, Modal } from 'antd';
 import {
+  Grid,
   Button,
   Checkbox,
   List as ListComponent,
   TextareaItem,
-  InputItem
+  InputItem,
 } from 'antd-mobile';
 import styled from 'styled-components';
 
@@ -25,8 +26,17 @@ class List extends Component {
     this.setState({ active: !this.state.active });
   };
 
-  onChange = value => {
-    console.log(value);
+  onTaskChange = async (task, e) => {
+    console.log(task, e.target.value);
+    task.completed = task.completed === 0 ? 1 : 0;
+
+    try {
+      const res = await api.updateTask(task.id, { updatedTask: task });
+      console.log(res);
+      this.props.getLists();
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   handleTextChange = value => {
@@ -60,14 +70,18 @@ class List extends Component {
 
     const completedTasks = list.tasks.filter(task => task.completed === 1);
     const incompletedTasks = list.tasks.filter(task => task.completed === 0);
+
+    console.log(completedTasks);
     return (
       <div className={className}>
-        <Card
+        <div
           onClick={() => this.setState({ active: true })}
-          title={`${list.title} (${list.tasks.length})`}
+          className="list-content"
+          // title={`${list.title} (${list.tasks.length})`}
         >
+          <h4>{list.title}</h4>
           {list.tasks.map(task => <div>{task.name}</div>)}
-        </Card>
+        </div>
         <Modal
           // title={list.title}
           visible={this.state.active}
@@ -79,7 +93,8 @@ class List extends Component {
             {incompletedTasks.map(task => (
               <CheckboxItem
                 key={task.id}
-                onChange={() => this.onChange(task.value)}
+                checked={task.completed}
+                onChange={e => this.onTaskChange(task, e)}
               >
                 {task.name}
               </CheckboxItem>
@@ -87,7 +102,8 @@ class List extends Component {
             {completedTasks.map(task => (
               <CheckboxItem
                 key={task.id}
-                onChange={() => this.onChange(task.value)}
+                checked={task.completed}
+                onChange={e => this.onTaskChange(task, e)}
               >
                 {task.name}
               </CheckboxItem>
@@ -115,6 +131,18 @@ class List extends Component {
 }
 
 export default styled(List)`
+  height: 100%;
+  width: 100%;
+  padding: 8px;
+
+  .list-content {
+    height: 100%;
+    /* width: 100%; */
+    /* margin: 8px; */
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+
   &:hover {
     cursor: pointer;
   }

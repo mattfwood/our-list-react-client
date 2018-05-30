@@ -11,9 +11,9 @@ class NewListCard extends Component {
 
   render() {
     return (
-      <Row className={this.props.className} gutter={16}>
+      <Row className={this.props.className}>
         <Col span={24}>
-          <Card>
+          <Card bordered={false}>
             <Search
               placeholder="New List Title"
               onSearch={value => {
