@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
-import { Layout, Row, Col, Button, Modal } from 'antd';
+import { Layout, Row, Col, Button, Modal, notification } from 'antd';
 import { Grid } from 'antd-mobile';
 import styled from 'styled-components';
+import copy from 'clipboard-copy';
 
 import './App.css';
 import api from './api/api';
@@ -58,7 +59,7 @@ class App extends Component {
   getLists = async () => {
     try {
       const { data } = await api.lists();
-      console.log(data);
+      // console.log(data);
       this.setState({ lists: data });
     } catch (error) {
       console.error(error);
@@ -67,11 +68,29 @@ class App extends Component {
   };
 
   createList = async title => {
-    console.log(title);
+    // console.log(title);
     try {
       const { data } = await api.createList(title);
       // get update lists
       this.getLists();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  inviteToken = async () => {
+    try {
+      const res = await api.token();
+      const { token } = res.data;
+      const link = `${window.location.href}?token=${token}`;
+      // console.log(link);
+      copy(link);
+      notification.open({
+        message: 'Invite Link Copied',
+        description:
+          'Your invite link was copied to your clipboard! Send this link to someone to have them join your group.',
+        duration: 0,
+      });
     } catch (error) {
       console.error(error);
     }
@@ -95,6 +114,11 @@ class App extends Component {
                 </Button>
                 <Button type="primary" onClick={this.toggleSignUp}>
                   Sign Up
+                </Button>
+              </If>
+              <If condition={userActive}>
+                <Button type="primary" onClick={this.inviteToken}>
+                  Invite to Group
                 </Button>
               </If>
             </Col>

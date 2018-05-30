@@ -82,6 +82,14 @@ const api = {
       throw new Error(error);
     }
   },
+
+  async token() {
+    try {
+      return await instance.get(`/groups/token`);
+    } catch (error) {
+      throw new Error(error);
+    }
+  },
 };
 
 export default api;
