@@ -1,18 +1,19 @@
 import instance from './instance';
 
 const api = {
-  async signUp(email, username, password) {
+  async signUp(email, username, password, token = '') {
     try {
       const res = await instance.post('/users/create', {
         email,
         username,
         password,
+        token
       });
+      console.log(res);
       window.localStorage.setItem(
         'ourListAuthHeaders',
         JSON.stringify(res.data.token)
       );
-      console.log(res);
       return res;
     } catch (error) {
       console.error(error);
@@ -49,6 +50,26 @@ const api = {
       console.log(res);
 
       return res;
+    } catch (error) {
+      console.error(error);
+    }
+  },
+
+  async createGroup(groupName) {
+    try {
+      return await instance.post('/groups/new', {
+        name: groupName,
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  },
+
+  async getGroup(token) {
+    try {
+      return await instance.post('/groups/show', {
+        token,
+      });
     } catch (error) {
       console.error(error);
     }

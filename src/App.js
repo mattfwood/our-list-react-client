@@ -9,7 +9,9 @@ import api from './api/api';
 import If from './components/utils/If';
 import LoginForm from './components/LoginForm';
 import SignUpForm from './components/SignUpForm';
+import AcceptInviteForm from './components/AcceptInviteForm';
 import NewListCard from './components/NewListCard';
+import NewGroupCard from './components/NewGroupCard';
 import List from './components/list/List';
 
 const { Header, Content, Footer } = Layout;
@@ -19,23 +21,38 @@ class App extends Component {
     user: {},
     loginModalVisible: false,
     signUpVisible: false,
+    acceptInviteVisible: false,
     lists: [],
   };
 
   componentDidMount = async () => {
-    try {
-      // check if the user has already logged in
-      const token = window.localStorage.getItem('ourListAuthHeaders');
+    // test if the user visited with a group invite token
+    const tokenPresent = window.location.href.includes('?token=');
 
-      // if they have, fetch their data and set the user
-      if (token) {
-        const { data } = await api.me();
-        this.setState({ user: data });
-        this.getLists();
+    if (tokenPresent) {
+      this.toggleAcceptInvite();
+    } else {
+      // if they didn't visit with a group token, try to authenticate them normally
+      try {
+        // check if the user has already logged in
+        const token = window.localStorage.getItem('ourListAuthHeaders');
+
+        // if they have, fetch their data and set the user
+        if (token) {
+          const { data } = await api.me();
+          this.setState({ user: data });
+          this.getLists();
+        }
+      } catch (error) {
+        console.error(error);
       }
-    } catch (error) {
-      console.error(error);
     }
+  };
+
+  getUserInfo = async () => {
+    const { data } = await api.me();
+    this.setState({ user: data });
+    this.getLists();
   };
 
   toggleLoginModal = () => {
@@ -44,6 +61,10 @@ class App extends Component {
 
   toggleSignUp = () => {
     this.setState({ signUpVisible: !this.state.signUpVisible });
+  };
+
+  toggleAcceptInvite = () => {
+    this.setState({ acceptInviteVisible: !this.state.acceptInviteVisible });
   };
 
   setUser = async user => {
@@ -100,12 +121,15 @@ class App extends Component {
     const { user, lists } = this.state;
     const { className } = this.props;
     const userActive = Object.keys(user).length > 0;
+    const userHasGroup = user.group_id && typeof user.group_id === 'number';
     return (
       <Layout className={`${className} layout`}>
         <Header>
           <Row type="flex" justify="space-between">
             <Col>
-              <h3 className="logo">Our List</h3>
+              <h3 className="logo">
+                {user.group ? user.group.name : 'Our List'}
+              </h3>
             </Col>
             <Col>
               <If condition={!userActive}>
@@ -116,7 +140,7 @@ class App extends Component {
                   Sign Up
                 </Button>
               </If>
-              <If condition={userActive}>
+              <If condition={userActive && userHasGroup}>
                 <Button type="primary" onClick={this.inviteToken}>
                   Invite to Group
                 </Button>
@@ -148,8 +172,20 @@ class App extends Component {
             </Col>
           </Row>
         </Modal>
+        <Modal
+          title="Accept Invite To Group"
+          visible={this.state.acceptInviteVisible}
+          onCancel={this.toggleAcceptInvite}
+          footer={null}
+        >
+          <Row type="flex" justify="center">
+            <Col>
+              <AcceptInviteForm setUser={this.setUser} />
+            </Col>
+          </Row>
+        </Modal>
         <Content>
-          <If condition={userActive}>
+          <If condition={userActive && userHasGroup}>
             <NewListCard createList={this.createList} />
             {/* <Row gutter={16}>
               {lists.map(list => (
@@ -166,6 +202,9 @@ class App extends Component {
               renderItem={list => <List list={list} getLists={this.getLists} />}
             />
           </If>
+          <If condition={userActive && !userHasGroup}>
+            <NewGroupCard getUserInfo={this.getUserInfo} />
+          </If>
           <If condition={!userActive}>
             <div style={{ background: '#fff', padding: 24, minHeight: 280 }}>
               <h2>Log In or Sign Up To Get Started</h2>
@@ -181,6 +220,11 @@ class App extends Component {
 export default styled(App)`
   .logo {
     color: #fff;
+  }
+
+  .group-name {
+    text-align: center;
+    padding: 8px;
   }
 
   .list-grid-borderless {
@@ -213,5 +257,11 @@ export default styled(App)`
 
   .ant-btn + .ant-btn {
     margin-left: 8px;
+  }
+
+  @media only screen and (max-width: 768px) {
+    .ant-layout-header {
+      padding: 0 25px;
+    }
   }
 `;
