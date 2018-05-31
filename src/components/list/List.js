@@ -26,12 +26,24 @@ class List extends Component {
     this.setState({ active: !this.state.active });
   };
 
-  onTaskChange = async (task, e) => {
-    console.log(task, e.target.value);
-    task.completed = task.completed === 0 ? 1 : 0;
+  onTaskChange = async (updatedTask, e) => {
+    // get current list
+    const { list } = this.props;
+
+    // update changed task
+    updatedTask.completed = updatedTask.completed === 0 ? 1 : 0;
+
+    // find task index in list
+    const taskIndex = list.tasks.findIndex(task => task.id === updatedTask.id);
+
+    // update task in list
+    list.tasks[taskIndex] = updatedTask;
+
+    // update list in main app component
+    this.props.updateList(list);
 
     try {
-      const res = await api.updateTask(task.id, { updatedTask: task });
+      const res = await api.updateTask(updatedTask.id, { updatedTask });
       console.log(res);
       this.props.getLists();
     } catch (error) {
@@ -80,7 +92,7 @@ class List extends Component {
           // title={`${list.title} (${list.tasks.length})`}
         >
           <h4>{list.title}</h4>
-          {list.tasks.map(task => <div>{task.name}</div>)}
+          {incompletedTasks.map(task => <div>{task.name}</div>)}
         </div>
         <Modal
           // title={list.title}
@@ -141,6 +153,12 @@ export default styled(List)`
     /* margin: 8px; */
     border: 1px solid #ddd;
     border-radius: 4px;
+    padding: 8px;
+
+    h4 {
+      font-size: 22px;
+      margin: 0;
+    }
   }
 
   &:hover {

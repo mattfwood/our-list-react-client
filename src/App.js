@@ -117,6 +117,14 @@ class App extends Component {
     }
   };
 
+  updateList = (updatedList) => {
+    const { lists } = this.state;
+    const listIndex = lists.findIndex(list => list.id === updatedList.id);
+
+    lists[listIndex] = updatedList;
+    this.setState({ lists });
+  }
+
   render() {
     const { user, lists } = this.state;
     const { className } = this.props;
@@ -199,7 +207,7 @@ class App extends Component {
               hasLine={false}
               data={lists}
               columnNum={2}
-              renderItem={list => <List list={list} getLists={this.getLists} />}
+              renderItem={list => <List list={list} getLists={this.getLists} updateList={this.updateList} />}
             />
           </If>
           <If condition={userActive && !userHasGroup}>
